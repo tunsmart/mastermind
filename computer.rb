@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+#Implements the Swaszek (1999-2000) algorithm for breaking the code on 5 times on average
 class Computer
   attr_reader :all_possible_codes, :all_possible_codes_copy
 
