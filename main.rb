@@ -114,62 +114,42 @@ class MasterMind
    end
   end
 
-  def placeholder
-    result = Hash.new(0)
-      code2=code.clone
-      temp_p = previous_guess.clone
-      code.each_with_index do |ball,position|
-        if previous_guess[position] == ball
-          result[:black] += 1
-          code2[position] = nil
-          temp_p[position] = nil
+  def play_round(result, player_guess, code)
+    temp_code = code.clone
+    temp_player_guess = player_guess.clone
+    player_guess.each_with_index do |ball, position|
+      if temp_code[position] == ball
+        result[:black] += 1
+        temp_player_guess[position] = nil
+        temp_code[position] = nil
+      end
+    end
+    temp_player_guess.compact!
+    temp_code.compact!
+    unless temp_player_guess.empty?
+      temp_player_guess.each do |ball|
+        if temp_code.any?(ball)
+          result[:white] += 1
+          temp_code.delete(ball)
         end
       end
-      code2.compact!
-      temp_p.compact!
-      unless code2.empty?
-        code2.each do |ball|
-          if temp_p.any?(ball)
-            result[:white] += 1
-            temp_p.delete(ball)
-          end
-        end
-      end
+    end
+    result
   end
 
   def play_as_code_breaker
     tries = 12
     result = Hash.new(0)
-    temp_code = code.clone
     player_guess = player.guess
-    temp_player_guess = player_guess.clone
     while tries.positive?
-      player_guess.each_with_index do |ball, position|
-        if temp_code[position] == ball
-          result[:black] += 1
-          temp_player_guess[position] = nil
-          temp_code[position] = nil
-        end
-      end
-      temp_player_guess.compact!
-      temp_code.compact!
-      unless temp_player_guess.empty?
-        temp_player_guess.each do |ball|
-          if temp_code.any?(ball)
-            result[:white] += 1
-            temp_code.delete(ball)
-          end
-        end
-      end
+      result = play_round(result, player_guess, code)
       if result[:black] == 4
         puts 'You broke the code. You won'
         break
       else
         puts "Your result is: #{result}. Your selection is: #{player_guess}"
         puts 'Try again'
-        temp_code = code.clone
         player_guess = player.guess
-        temp_player_guess = player_guess.clone
         result = Hash.new(0)
         tries -= 1
       end
@@ -178,31 +158,13 @@ class MasterMind
   end
 
   def play_as_code_maker
+    tries = 12
     computer = Computer.new
     self.code = player.make_code
-    tries = 12
     result = Hash.new(0)
-    temp_code = code.clone
     player_guess = computer.first_guess
-    temp_player_guess = player_guess.clone
     while tries.positive?
-      player_guess.each_with_index do |ball, position|
-        if temp_code[position] == ball
-          result[:black] += 1
-          temp_player_guess[position] = nil
-          temp_code[position] = nil
-        end
-      end
-      temp_player_guess.compact!
-      temp_code.compact!
-      unless temp_player_guess.empty?
-        temp_player_guess.each do |ball|
-          if temp_code.any?(ball)
-            result[:white] += 1
-            temp_code.delete(ball)
-          end
-        end
-      end
+      result = play_round(result, player_guess, code)
       tries -= 1
       if result[:black] == 4
         puts "Computer's result is: #{result}. Computer's selection is: #{player_guess}"
